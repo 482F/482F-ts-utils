@@ -1,22 +1,24 @@
-export type Result<V> = readonly [undefined, Error] | readonly [V, undefined]
+export type Result<V> =
+  | readonly [undefined, Readonly<Error>]
+  | readonly [V, undefined]
 
-type Falsy = typeof document.all | '' | 0 | 0n | false | null | undefined
+type Falsy = '' | 0 | 0n | false | null | undefined
 
 export type IsFalsy<T> = T extends Falsy ? true : false
 
-export async function sleep(ms = 100): Promise<undefined> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
+export async function sleep(ms = 100): Promise<true> {
+  return new Promise((resolve) =>
+    setTimeout(() => {
+      resolve(true)
+    }, ms)
+  )
 }
 
 export async function wait<
   F extends () => unknown,
   RR extends F extends () => infer U ? U : never,
-  R extends (RR extends Promise<infer V> ? V : RR) extends infer W
-    ? IsFalsy<W> extends true
-      ? never
-      : W
-    : never
->(func: F, intervalMs = 100, timeoutMs = 10000): Promise<Result<R>> {
+  R extends NonNullable<Awaited<RR>>
+>(func: F, intervalMs = 100, timeoutMs = 10_000): Promise<Result<R>> {
   let timeouted = false
   if (timeoutMs) {
     setTimeout(() => {
@@ -29,7 +31,8 @@ export async function wait<
   while (!result && !timeouted) {
     // 直列で実行して結果が truthy になるまで待つ必要があるためループ内での await を許可
     /* eslint-disable no-await-in-loop */
-    result = await func()
+    // eslint-disable-next-line @typescript-eslint/await-thenable
+    result = (await func()) as R
     await sleep(intervalMs)
     /* eslint-enable no-await-in-loop */
   }
@@ -86,20 +89,6 @@ function _isJson(
 }
 export function isJson(val: unknown): val is Json {
   return _isJson(val, new Set())
-}
-
-export function makeSha256Func(salt = ''): (plain: string) => Promise<string> {
-  // ブラウザであれば globalThis.crypto は存在するが、Node では存在しないため
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const cryptoPromise = globalThis.crypto ?? import('node:crypto')
-  return async (plain: string) =>
-    (await cryptoPromise).subtle
-      .digest('SHA-256', new TextEncoder().encode(plain + salt))
-      .then((r) =>
-        Array.from(new Uint8Array(r))
-          .map((b) => b.toString(16).padStart(2, '0'))
-          .join('')
-      )
 }
 
 export type IsNever<T> = [T] extends [never] ? true : false
@@ -221,7 +210,7 @@ export const ConstArray = {
   >(constArray: ConstArray, mapFunc: F): MappedConstArray {
     const mappedConstArray = (
       constArray as unknown as Readonly<NonNullable<F['value']>>[]
-    ).map(mapFunc)
+    ).map((el, i) => mapFunc(el, i as Readonly<NonNullable<F['key']>>))
     return mappedConstArray as unknown as MappedConstArray
   },
 }
@@ -234,6 +223,7 @@ export const ConstArray = {
  * measureTime
  * svgToPng
  * randBetween, randPick, shuffle
+ * sha256
  *
  * browser
  * - textarea
