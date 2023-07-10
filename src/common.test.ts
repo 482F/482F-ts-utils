@@ -1,19 +1,19 @@
+/* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable id-length */
+/* eslint-disable unicorn/consistent-function-scoping */
 import {
   ConstArray,
   ConstObject,
   type IsFalsy,
   type IsNever,
   type MapFunc,
-  type NullableMapFunc,
   type Result,
   type UnionToTuple,
   type Valueof,
   isJson,
   isJsonPrimitive,
   isNotNullish,
-  makeSha256Func,
   sleep,
   wait,
 } from './common'
@@ -25,7 +25,7 @@ describe('Result', () => {
   })
 
   test('Failure', () => {
-    const f = [undefined, new Error()] as const
+    const f = [undefined, new Error('fail')] as const
     expectTypeOf(f).toMatchTypeOf<Result<false>>()
   })
 })
@@ -41,14 +41,14 @@ describe('sleep', () => {
   test('', async () => {
     let num = 42
     const p = sleep(200).then(() => num++)
-    const ct = new Date().getTime()
+    const ct = Date.now()
 
     expect(num).toBe(42)
     await p
     expect(num).toBe(43)
 
-    expect(new Date().getTime() - ct).toBeLessThan(210)
-    expect(new Date().getTime() - ct).toBeGreaterThan(190)
+    expect(Date.now() - ct).toBeLessThan(210)
+    expect(Date.now() - ct).toBeGreaterThan(190)
   })
 })
 
@@ -56,7 +56,7 @@ describe('wait', () => {
   const intervalMs = 30
   const timeoutMs = 200
   function waitTest(
-    intervalCallback = async (): Promise<undefined> => sleep(0)
+    intervalCallback: () => unknown = async (): Promise<true> => sleep(0)
   ): [{ value: boolean }, Promise<Result<0 | 1>>, () => void] {
     const isResolved = { value: false }
     let num: 0 | 1 = 0
@@ -69,7 +69,7 @@ describe('wait', () => {
         },
         intervalMs,
         timeoutMs
-      ).then((r: Readonly<Result<0 | 1>>) => {
+      ).then((r: Result<0 | 1>) => {
         isResolved.value = true
         return r
       }),
@@ -124,12 +124,12 @@ describe('Valueof', () => {
 describe('isNotNullish', () => {
   test('normal', () => {
     const o = [42, '', []] as unknown[]
-    const inn = o.every(isNotNullish)
+    const inn = o.every((v) => isNotNullish(v))
     expect(inn).toBe(true)
   })
   test('null', () => {
     const o = [null, undefined] as unknown[]
-    const inn = o.some(isNotNullish)
+    const inn = o.some((v) => isNotNullish(v))
     expect(inn).toBe(false)
   })
   test('type', () => {
@@ -146,35 +146,22 @@ describe('isNotNullish', () => {
 describe('isJsonPrimitive', () => {
   test('normal', () => {
     const is = [42, null, 'abc', false] as unknown[]
-    expect(is.every(isJsonPrimitive)).toBe(true)
+    expect(is.every((i) => isJsonPrimitive(i))).toBe(true)
   })
   test('not Promitive', () => {
     const is = [{}, [], undefined] as unknown[]
-    expect(is.some(isJsonPrimitive)).toBe(false)
+    expect(is.some((i) => isJsonPrimitive(i))).toBe(false)
   })
 })
 
 describe('isJson', () => {
   test('normal', () => {
     const is = [42, null, 'abc', false, {}, []] as unknown[]
-    expect(is.every(isJson)).toBe(true)
+    expect(is.every((i) => isJson(i))).toBe(true)
   })
   test('not Json', () => {
     const is = [undefined, globalThis] as unknown[]
-    expect(is.some(isJson)).toBe(false)
-  })
-})
-
-describe('makeSha256Func', () => {
-  test('normal', async () => {
-    const makeSha256A = await makeSha256Func('test-salt-a')
-    const makeSha256B = await makeSha256Func('test-salt-b')
-
-    const a1 = await makeSha256A('plain')
-    const a2 = await makeSha256A('plain')
-    const b1 = await makeSha256B('plain')
-    expect(a1 === a2).toBe(true)
-    expect(a1 === b1).toBe(false)
+    expect(is.some((i) => isJson(i))).toBe(false)
   })
 })
 
@@ -196,7 +183,7 @@ describe('UnionToTuple', () => {
 describe('ConstObject.keys', () => {
   test('normal', () => {
     const keys = ConstObject.keys({ a: 41, b: 42 })
-    expectTypeOf(keys).toMatchTypeOf<['a', 'b'] | ['b' | 'a']>()
+    expectTypeOf(keys).toMatchTypeOf<['a', 'b'] | ['b', 'a']>()
     expect(keys).toEqual(expect.arrayContaining(['a', 'b']))
     expect(keys).toHaveLength(2)
   })
