@@ -1,4 +1,4 @@
-import { isJson, isJsonPrimitive } from './json'
+import { isJson, isJsonPrimitive } from './json.ts'
 
 describe('isJsonPrimitive', () => {
   test('normal', () => {

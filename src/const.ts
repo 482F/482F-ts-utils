@@ -1,4 +1,4 @@
-import type { Key, UnionToTuple, Valueof } from './common'
+import type { Key, UnionToTuple, Valueof } from './common.ts'
 
 interface _MapFunc {
   (

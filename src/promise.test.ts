@@ -1,5 +1,5 @@
-import { sleep, wait } from './promise'
-import type { Result } from './common'
+import { sleep, wait } from './promise.ts'
+import type { Result } from './common.ts'
 
 describe('sleep', () => {
   test('', async () => {
