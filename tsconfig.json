@@ -19,5 +19,5 @@
     },
     "types": ["vitest/globals"]
   },
-  "include": ["src/**/*.ts", "**/*.d.ts"]
+  "include": ["**/*.ts", "**/*.d.ts"]
 }
