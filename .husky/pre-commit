@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+yarn run prettier --write .
+yarn run tsc --noEmit
+yarn run eslint .
+yarn run vitest run
