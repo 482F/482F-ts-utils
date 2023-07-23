@@ -1,4 +1,4 @@
-import { ConstArray, ConstObject, type MapFunc } from './const'
+import { ConstArray, ConstObject, type MapFunc } from './const.ts'
 
 describe('ConstObject.keys', () => {
   test('normal', () => {

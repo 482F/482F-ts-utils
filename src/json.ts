@@ -1,4 +1,4 @@
-import { isNotNullish } from './common'
+import { isNotNullish } from './common.ts'
 
 export type JsonKey = number | string
 export type JsonPrimitive = boolean | number | string | null

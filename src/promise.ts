@@ -1,4 +1,4 @@
-import type { Result } from './common'
+import type { Result } from './common.ts'
 
 export async function sleep(ms = 100): Promise<true> {
   return new Promise((resolve) =>

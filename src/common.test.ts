@@ -5,7 +5,7 @@ import {
   type UnionToTuple,
   type Valueof,
   isNotNullish,
-} from './common'
+} from './common.ts'
 
 describe('Result', () => {
   test('Success', () => {
