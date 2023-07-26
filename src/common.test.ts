@@ -2,6 +2,7 @@ import {
   type IsFalsy,
   type IsNever,
   type Result,
+  ResultUtils,
   type UnionToTuple,
   type Valueof,
   isNotNullish,
@@ -16,6 +17,23 @@ describe('Result', () => {
   test('Failure', () => {
     const f = [undefined, new Error('fail')] as const
     expectTypeOf(f).toMatchTypeOf<Result<false>>()
+  })
+})
+
+describe('ResultUtils', () => {
+  test('Success', () => {
+    const s = [true, undefined] as const
+    expect(ResultUtils.unwrap(s)).toBe(true)
+    expect(ResultUtils.expect(s, new Error('test'))).toBe(true)
+  })
+  test('Failure', () => {
+    const f = [undefined, new Error('fail unwrap')] as const
+    expect(() => {
+      ResultUtils.unwrap(f)
+    }).toThrowError()
+    expect(() => {
+      ResultUtils.expect(f, new Error('test'))
+    }).toThrowError()
   })
 })
 
