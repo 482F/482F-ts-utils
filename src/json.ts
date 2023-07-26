@@ -1,4 +1,5 @@
-import { type Result, isNotNullish } from './common.ts'
+import type { Result } from './result.ts'
+import { isNotNullish } from './common.ts'
 
 export type JsonKey = number | string
 export type JsonPrimitive = boolean | number | string | null

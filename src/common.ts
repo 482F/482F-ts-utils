@@ -1,24 +1,3 @@
-export type Result<V> =
-  | readonly [undefined, Readonly<Error>]
-  | readonly [V, undefined]
-
-export const ResultUtils = {
-  expect<T, E extends Error | undefined>(r: Result<T>, receivedE: E) {
-    const [v, e] = r
-    if (e) {
-      throw receivedE
-    }
-    return v
-  },
-  unwrap<T>(r: Result<T>) {
-    const [v, e] = r
-    if (e) {
-      throw e
-    }
-    return v
-  },
-} as const
-
 type Falsy = '' | 0 | 0n | false | null | undefined
 
 export type IsFalsy<T> = T extends Falsy ? true : false
