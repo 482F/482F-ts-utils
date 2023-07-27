@@ -905,7 +905,7 @@ escape-string-regexp@^4.0.0:
 
 "eslint-config-482f-config@https://github.com/482F/eslint-config-482f-config.git":
   version "1.0.0"
-  resolved "https://github.com/482F/eslint-config-482f-config.git#12508c22c0b5da069c41e6649b138cc66bb5c419"
+  resolved "https://github.com/482F/eslint-config-482f-config.git#ffad77eab7e2378ee6cc932a07ac76b95f9d0247"
   dependencies:
     "@eslint/eslintrc" "^2.1.0"
     "@typescript-eslint/eslint-plugin" "^5.60.0"
