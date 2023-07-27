@@ -12,6 +12,7 @@ export type JsonObject = { [x in JsonKey]: Json }
 export type JsonNonPrimitive = Json[] | JsonObject
 
 export type Json = JsonNonPrimitive | JsonPrimitive
+
 function _isJson(
   val: unknown,
   // 再帰的に探索しつつ、登場したオブジェクトを Set に登録していくため readonly にはできない

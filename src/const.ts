@@ -1,4 +1,5 @@
 import type { Key, UnionToTuple, Valueof } from './common.ts'
+import type { Result } from './result.ts'
 
 interface _MapFunc {
   (
@@ -103,4 +104,76 @@ export const ConstArray = {
     ).map((el, i) => mapFunc(el, i as Readonly<NonNullable<F['key']>>))
     return mappedConstArray as unknown as MappedConstArray
   },
+}
+
+type DeepMerge<A, B> = [
+  A extends Record<string, unknown> ? true : false,
+  B extends Record<string, unknown> ? true : false
+] extends [infer IsARecord, infer IsBRecord]
+  ? [IsARecord, IsBRecord] extends [false, true] | [true, false]
+    ? never
+    : [IsARecord, IsBRecord] extends [false, false]
+    ? B extends undefined
+      ? A
+      : B
+    : {
+        [key in keyof A | keyof B]: [
+          key extends keyof A ? A[key] : undefined,
+          key extends keyof B ? B[key] : undefined
+        ] extends [infer AVal, infer BVal]
+          ? DeepMerge<AVal, BVal>
+          : never
+      }
+  : never
+
+function isObject(
+  val: unknown
+): val is (Record<string, unknown> & object) | undefined {
+  // eslint-disable-next-line no-eq-null, eqeqeq
+  return val != null && !Array.isArray(val) && typeof val === 'object'
+}
+export function _deepMerge<const A, const B>(
+  a: A,
+  b: B,
+  keys: readonly string[]
+): Result<unknown> {
+  const getJoinedKeys = (): string =>
+    keys.map((innerKey) => `["${innerKey}"]`).join('')
+  const isAObject = isObject(a)
+  const isBObject = isObject(b)
+  if (a === undefined || b === undefined) {
+    return [b ?? a, undefined]
+  }
+  if (!isAObject || !isBObject) {
+    if (isAObject || isBObject) {
+      return [
+        undefined,
+        new Error(
+          `片方にはオブジェクト、片方には値が入っています。keys: ${getJoinedKeys()}`
+        ),
+      ]
+    }
+    return [b, undefined]
+  }
+  const record: Record<string, unknown> = {}
+  for (const key of ConstObject.keys({
+    ...a,
+    ...b,
+  })) {
+    const aVal: unknown = a[key]
+    const bVal: unknown = b[key]
+    const [result, err] = _deepMerge(aVal, bVal, [...keys, key])
+    if (err) {
+      return [undefined, err]
+    }
+    record[key] = result
+  }
+  return [record, undefined]
+}
+
+export function deepMerge<const A, const B>(
+  a: A,
+  b: B
+): Result<DeepMerge<A, B>> {
+  return _deepMerge(a, b, []) as Result<DeepMerge<A, B>>
 }
