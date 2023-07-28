@@ -9,7 +9,7 @@ export default [
     languageOptions: {
       parser: TypescriptParser,
       parserOptions: {
-        project: './tsconfig.json',
+        project: true,
         sourceType: 'module',
       },
     },
