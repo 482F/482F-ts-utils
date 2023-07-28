@@ -1,5 +1,5 @@
 import { doExtends, isJson, isJsonPrimitive } from './json.ts'
-import type { Result } from './common.ts'
+import type { Result } from './result.ts'
 
 describe('isJsonPrimitive', () => {
   test('normal', () => {
