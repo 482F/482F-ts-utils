@@ -1,4 +1,4 @@
-import { ConstArray, ConstObject, type MapFunc } from './const.ts'
+import { ConstArray, ConstObject, type MapFunc, deepMerge } from './const.ts'
 
 describe('ConstObject.keys', () => {
   test('normal', () => {
@@ -70,5 +70,77 @@ describe('ConstArray.map', () => {
     const array = ConstArray.map([41, 42], f)
     expectTypeOf(array).toMatchTypeOf<readonly ['41!', '42!']>()
     expect(array).toEqual(['41!', '42!'])
+  })
+})
+
+describe('deepMerge', () => {
+  test('normal', () => {
+    const a = {
+      a: 42,
+      b: {
+        c: 43,
+        d: 44,
+        f: [45],
+        g: { h: 46 },
+      },
+    } as const
+    const b = {
+      a: 47,
+      b: {
+        c: 48,
+        e: 49,
+        f: [50, 51],
+      },
+    } as const
+    const [merged, err] = deepMerge(a, b)
+    expect(err).toBeUndefined()
+    if (err) {
+      throw new Error('err')
+    }
+    expectTypeOf(merged).toMatchTypeOf<{
+      a: 47
+      b: {
+        c: 48
+        d: 44
+        e: 49
+        f: readonly [50, 51]
+        g: { h: 46 }
+      }
+    }>()
+    expect(merged).toEqual({
+      a: 47,
+      b: {
+        c: 48,
+        d: 44,
+        e: 49,
+        f: [50, 51],
+        g: { h: 46 },
+      },
+    })
+  })
+  test('type mismatched', () => {
+    const a = {
+      a: 42,
+      b: {
+        c: 43,
+        d: 44,
+      },
+    } as const
+    const b = {
+      a: 45,
+      b: {
+        c: 46,
+        d: {
+          f: 47,
+        },
+      },
+    } as const
+    const [merged, err] = deepMerge(a, b)
+    expect(err).not.toBeUndefined()
+    if (!err) {
+      throw new Error('err')
+    }
+    expectTypeOf(merged).toMatchTypeOf<undefined>()
+    expect(merged).toEqual(undefined)
   })
 })
