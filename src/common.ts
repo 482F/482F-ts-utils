@@ -36,6 +36,92 @@ type _UnionToTuple<U, L = LastOf<U>> = IsNever<U> extends true
 
 export type UnionToTuple<U> = _UnionToTuple<U>
 
+/**
+ * @param {Date} date - 変換対象の Date
+ * @param {String} format - 変換規則。下記の規則で変換される
+ *  - $yyyy -> 西暦
+ *  - $MM   -> 月
+ *  - $dd   -> 日
+ *  - $HH   -> 時
+ *  - $mm   -> 分
+ *  - $ss   -> 秒
+ *  - $fff  -> ミリ秒
+ *  - $a    -> 曜日 (ex. 月)
+ *  - $$    -> $ (エスケープ)
+ * @return {String} - date を format に従って変換した文字列
+ */
+export const formatDate = (() => {
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+  const p = (num: number) => num.toString().padStart(2, '0')
+  const rules = [
+    {
+      converter: (date: Readonly<Date>) => date.getFullYear().toString(),
+      target: 'yyyy',
+    },
+    {
+      // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+      converter: (date: Readonly<Date>) => p(date.getMonth() + 1),
+      target: 'MM',
+    },
+    { converter: (date: Readonly<Date>) => p(date.getDate()), target: 'dd' },
+    { converter: (date: Readonly<Date>) => p(date.getHours()), target: 'HH' },
+    { converter: (date: Readonly<Date>) => p(date.getMinutes()), target: 'mm' },
+    { converter: (date: Readonly<Date>) => p(date.getSeconds()), target: 'ss' },
+    {
+      converter: (date: Readonly<Date>) => p(date.getMilliseconds()),
+      target: 'fff',
+    },
+    {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      converter: (date: Readonly<Date>) => '日月火水木金土'[date.getDay()]!,
+      target: 'a',
+    },
+  ].map(
+    ({
+      target,
+      converter,
+    }: Readonly<{
+      target: string
+      converter: (date: Readonly<Date>) => string
+    }>) => ({
+      converter,
+      pattern: new RegExp(`(?<!\\$)\\$${target}`, 'gu'),
+      target,
+    })
+  )
+
+  return (date: Readonly<Date>, format: string) => {
+    const results: Record<string, string> = {}
+    return rules
+      .reduce(
+        (
+          prev: readonly string[],
+          {
+            target,
+            pattern,
+            converter,
+          }: Readonly<{
+            target: string
+            pattern: Readonly<RegExp>
+            converter: (date: Readonly<Date>) => string
+          }>
+        ) =>
+          prev.map((section) => {
+            if (!pattern.test(section)) {
+              return section
+            }
+
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-multi-assign
+            const result = (results[target] ??= converter(date))
+
+            return section.replaceAll(pattern, result)
+          }),
+        format.split('$$')
+      )
+      .join('$')
+  }
+})()
+
 /*
  * ConstObject: filter
  * ConstArray: flatMap, filter
@@ -52,67 +138,4 @@ export type UnionToTuple<U> = _UnionToTuple<U>
  * - getCDN
  * - downloadText (cp932)
  * - clip
- */
-
-/*
- * const p = (num) => num.toString().padStart(2, '0')
- * const rules = [
- *   { target: 'yyyy', converter: (date) => date.getFullYear() },
- *   { target: 'MM', converter: (date) => p(date.getMonth() + 1) },
- *   { target: 'dd', converter: (date) => p(date.getDate()) },
- *   { target: 'HH', converter: (date) => p(date.getHours()) },
- *   { target: 'mm', converter: (date) => p(date.getMinutes()) },
- *   { target: 'ss', converter: (date) => p(date.getSeconds()) },
- *   { target: 'fff', converter: (date) => p(date.getMilliseconds()) },
- *   { target: 'a', converter: (date) => '日月火水木金土'[date.getDay()] },
- * ].map(({ target, converter }) => ({
- *   target,
- *   pattern: new RegExp(`(?<!\\$)\\$${target}`, 'g'),
- *   converter,
- * }))
- *
- * @param {Date} date - 変換対象の Date
- * @param {String} format - 変換規則。下記の規則で変換される
- *  - $yyyy -> 西暦
- *  - $MM   -> 月
- *  - $dd   -> 日
- *  - $HH   -> 時
- *  - $mm   -> 分
- *  - $ss   -> 秒
- *  - $fff  -> ミリ秒
- *  - $a    -> 曜日 (ex. 月)
- *  - $$    -> $ (エスケープ)
- * @return {String} - date を format に従って変換した文字列
- * date.format = (date, format) => {
- *   const results = {}
- *
- *   return rules
- *     .reduce((prev, { target, pattern, converter }) => {
- *       return prev.map((section) => {
- *         if (!section.match(pattern)) {
- *           return section
- *         }
- *
- *         if (!results[target]) {
- *           results[target] = converter(date)
- *         }
- *
- *         return section.replaceAll(pattern, results[target])
- *       })
- *     }, format.split('$$'))
- *     .join('$')
- * }
- *
- * date._test.format = (tester) => {
- *   const targetDate = new Date(2022, 04, 26, 12, 26, 37)
- *   tester.assertEqual(
- *     '2022/05/26 12:26:37 (木)',
- *     date.format(targetDate, '$yyyy/$MM/$dd $HH:$mm:$ss ($a)')
- *   )
- *   tester.assertEqual('20222022', date.format(targetDate, '$yyyy$yyyy'))
- *   tester.assertEqual('$yyyy', date.format(targetDate, '$$yyyy'))
- *   tester.assertEqual('$2022', date.format(targetDate, '$$$yyyy'))
- *   tester.assertEqual('$$', date.format(targetDate, '$$$$'))
- * }
- *
  */
