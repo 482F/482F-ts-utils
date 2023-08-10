@@ -4,6 +4,7 @@ import {
   type UnionToTuple,
   type Valueof,
   isNotNullish,
+  formatDate,
 } from './common.ts'
 
 describe('Falsy', () => {
@@ -59,5 +60,18 @@ describe('UnionToTuple', () => {
     expectTypeOf<UnionToTuple<1 | 2 | 3>>().toMatchTypeOf<
       [1, 2, 3] | [1, 3, 2] | [2, 1, 3] | [2, 3, 1] | [3, 1, 2] | [3, 2, 1]
     >()
+  })
+})
+
+describe('formatDate', () => {
+  test('normal', () => {
+    const targetDate = new Date(2022, 4, 26, 12, 26, 37)
+    expect('2022/05/26 12:26:37 (木)').toBe(
+      formatDate(targetDate, '$yyyy/$MM/$dd $HH:$mm:$ss ($a)')
+    )
+    expect('20222022').toBe(formatDate(targetDate, '$yyyy$yyyy'))
+    expect('$yyyy').toBe(formatDate(targetDate, '$$yyyy'))
+    expect('$2022').toBe(formatDate(targetDate, '$$$yyyy'))
+    expect('$$').toBe(formatDate(targetDate, '$$$$'))
   })
 })
