@@ -4,6 +4,10 @@ export type IsFalsy<T> = T extends Falsy ? true : false
 
 export type IsNever<T> = [T] extends [never] ? true : false
 
+export type IsTuple<T extends readonly unknown[]> = number extends T['length']
+  ? false
+  : true
+
 export function isNotNullish(val: unknown): val is Record<string, unknown> {
   // undefined もしくは null でない場合なので `!=` を使用
   // eslint-disable-next-line no-eq-null, eqeqeq
