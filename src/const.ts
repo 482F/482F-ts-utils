@@ -1,4 +1,4 @@
-import type { Key, UnionToTuple, Valueof } from './common.ts'
+import type { IsTuple, Key, UnionToTuple, Valueof } from './common.ts'
 import type { Result } from './result.ts'
 
 interface _MapFunc {
@@ -176,4 +176,23 @@ export function deepMerge<const A, const B>(
   b: B
 ): Result<DeepMerge<A, B>> {
   return _deepMerge(a, b, []) as Result<DeepMerge<A, B>>
+}
+
+type StringJoin<S extends readonly string[], D extends string> = [
+  IsTuple<S>,
+  S
+] extends [
+  true,
+  readonly [infer F extends string, ...infer R extends readonly string[]]
+]
+  ? `${F}${R extends [] ? '' : `${D}${StringJoin<R, D>}`}`
+  : never
+export const ConstUtils = {
+  stringJoin<
+    const S extends readonly string[],
+    const D extends string,
+    const R extends IsTuple<S> extends true ? StringJoin<S, D> : never
+  >(strings: S, delimiter: D): R {
+    return strings.join(delimiter) as R
+  },
 }
