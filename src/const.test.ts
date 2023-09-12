@@ -1,4 +1,10 @@
-import { ConstArray, ConstObject, type MapFunc, deepMerge } from './const.ts'
+import {
+  ConstArray,
+  ConstObject,
+  ConstUtils,
+  type MapFunc,
+  deepMerge,
+} from './const.ts'
 
 describe('ConstObject.keys', () => {
   test('normal', () => {
@@ -142,5 +148,13 @@ describe('deepMerge', () => {
     }
     expectTypeOf(merged).toMatchTypeOf<undefined>()
     expect(merged).toEqual(undefined)
+  })
+})
+
+describe('StringJoin', () => {
+  test('normal', () => {
+    const joined = ConstUtils.stringJoin(['a', 'b', 'c'], '@')
+    expectTypeOf(joined).toMatchTypeOf<'a@b@c'>()
+    expect(joined).toEqual('a@b@c')
   })
 })
