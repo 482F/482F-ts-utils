@@ -1,10 +1,11 @@
 import {
   type IsFalsy,
   type IsNever,
+  type IsTuple,
   type UnionToTuple,
   type Valueof,
-  isNotNullish,
   formatDate,
+  isNotNullish,
 } from './common.ts'
 
 describe('Falsy', () => {
@@ -52,6 +53,13 @@ describe('IsNever', () => {
   test('normal', () => {
     expectTypeOf<IsNever<never>>().toEqualTypeOf<true>()
     expectTypeOf<IsNever<4>>().toEqualTypeOf<false>()
+  })
+})
+
+describe('IsTuple', () => {
+  test('normal', () => {
+    expectTypeOf<IsTuple<[1, 2]>>().toEqualTypeOf<true>()
+    expectTypeOf<IsTuple<number[]>>().toEqualTypeOf<false>()
   })
 })
 
