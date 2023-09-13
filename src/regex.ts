@@ -1,4 +1,4 @@
-import type { Result } from './result'
+import type { Result } from './result.ts'
 
 function isValidGroups(
   names: readonly string[],
